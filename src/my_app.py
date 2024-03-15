@@ -104,7 +104,7 @@ with tab2:
       else:
           steamAppID = col2.text_input("Enter a Steam App ID:", value=external, key='title')
 
-      if st.button('Search'):
+      if st.button('Search Game'):
           try:
               response = requests.get(LIST_OF_GAMES_URL, params={filter_by: external})
               response.raise_for_status()
@@ -124,38 +124,38 @@ with tab2:
 
 with tab3:
   def stores_list():
-      try:
-          response = requests.get(LIST_OF_STORES_URL)
-          response.raise_for_status()
-          stores = response.json()
+    try:
+      response = requests.get(LIST_OF_STORES_URL)
+      response.raise_for_status()
+      stores = response.json()
 
-          col1, col2 = st.columns(2)
-          search_field = col1.selectbox("Search by:", ['storeID', 'storeName'])
-          search_value = col2.text_input("Enter search value:")
+      col1, col2 = st.columns(2)
+      search_field = col1.selectbox("Search by:", ['storeID', 'storeName'])
+      search_value = col2.text_input("Enter search value:")
 
-          if search_value:
-              filtered_stores = [store for store in stores if store.get(search_field) == search_value]
-              if filtered_stores:
-                  st.write('Filtered Stores:')
-                  st.dataframe(filtered_stores)
-              else:
-                  st.write('No stores found for the given search criteria.')
+      if st.button('Search Store'):
+        filtered_stores = [store for store in stores if store.get(search_field) == search_value]
+        if filtered_stores:
+          st.write('Filtered Stores:')
+          st.dataframe(filtered_stores)
+        else:
+          st.write('No stores found for the given search criteria.')
 
-          if not stores:
-              st.write('No stores found.')
+      if not stores:
+        st.write('No stores found.')
 
-          col1, col2 = st.columns(2)
-          show_all_stores = col1.button('Show All Stores')
+      col1, col2 = st.columns(2)
+      show_all_stores = col1.button('Show Stores')
 
-          if show_all_stores:
-              hide_all_stores = col2.button('Hide All Stores')
-              st.write('List of all Stores:')
-              st.dataframe(stores)
-              if hide_all_stores:
-                  st.write('')  # Clear the dataframe when the Hide button is clicked
+      if show_all_stores:
+        hide_all_stores = col2.button('Hide Stores')
+        st.write('List of all Stores:')
+        st.dataframe(stores)
+        if hide_all_stores:
+          st.write('')
 
-      except requests.RequestException as e:
-          st.error(f'Failed to fetch store data: {e}')
+    except requests.RequestException as e:
+      st.error(f'Failed to fetch store data: {e}')
 
   stores_list()
 
@@ -163,7 +163,7 @@ with tab4:
   def edit_alerts():
     col1, col2 = st.columns(2)
     action = col1.selectbox('Select Action', ['set', 'delete'])
-    email = col2.text_input('Enter User Email', 'example@example.com')
+    email = col2.text_input('Enter User Email', value='', args={'placeholder': 'example@example.com', 'alpha': 0.5})
 
     if not validate_email(email):
       st.warning('Invalid email format. Please enter a valid email address.')
@@ -197,7 +197,7 @@ with tab4:
   def manage_alerts():
       col1, col2 = st.columns(2)
       action = col1.selectbox('Select Action', ['manage'])
-      email = col2.text_input('Enter Users Email', 'example@example.com')
+      email = col2.text_input('Enter Users Email', value='', args={'placeholder': 'example@example.com', 'alpha': 0.5})
 
       if not validate_email(email):
         st.warning('Invalid email format. Please enter a valid email address.')
