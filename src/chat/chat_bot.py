@@ -6,11 +6,16 @@ load_dotenv()
 import openai
 
 from styles.messages.styles import user_message_style, assistant_message_style
+import random
+from utils.default_messages import random_welcome_message
 openai.openai_api_key = os.getenv("OPENAI_API_KEY")
 
 def chat_bot():
   if "chat_history" not in st.session_state:
     st.session_state["chat_history"] = []
+
+  if not st.session_state["chat_history"]:
+      st.session_state["chat_history"].append({"role": "assistant", "content": random_welcome_message()})
 
   user_input = st.text_input("Enter your message:")
   if user_input == "":
@@ -45,5 +50,3 @@ def chat_bot():
       st.write(f'<div style="display: flex; justify-content: flex-start;"><div style="{user_message_style}">{message["content"]}</div></div>', unsafe_allow_html=True)
     else:
       st.write(f'<div style="display: flex; justify-content: flex-end;"><div style="{assistant_message_style}">{message["content"]}</div></div>', unsafe_allow_html=True)
-if "chat_history" not in st.session_state:
-    st.session_state["chat_history"] = []
