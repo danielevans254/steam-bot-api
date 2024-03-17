@@ -28,6 +28,6 @@ def model_chat():
 def chat_history():
   for message in st.session_state["chat_history"]:
     if message["role"] == "user":
-      st.write(f'<div style="display: flex; justify-content: flex-start;"><div style="{user_message_style}">{message["content"]}</div></div>', unsafe_allow_html=True)
+      st.write(f'<div style="display: flex; justify-content: flex-start; word-wrap: break-word;"><div style="{user_message_style}">{message["content"]}</div></div>', unsafe_allow_html=True)
     else:
-      st.write(f'<div style="display: flex; justify-content: flex-end;"><div style="{assistant_message_style}">{message["content"]}</div></div>', unsafe_allow_html=True)
+      st.write(f'<div style="display: flex; justify-content: flex-end; word-wrap: break-word;"><div style="{assistant_message_style}">{message["content"]}</div></div>', unsafe_allow_html=True)
