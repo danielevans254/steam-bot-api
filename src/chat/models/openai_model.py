@@ -19,7 +19,3 @@ def openAI_response(user_input):
     assistant_response_text = ""
 
   return assistant_response_text
-
-
-
-

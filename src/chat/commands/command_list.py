@@ -2,7 +2,6 @@ import streamlit as st
 
 def command_lists():
   st.write("To get started, type in the command you want to execute.")
-  st.write("For example, type `list of deals` to get the list of deals.")
   st.write("If you need help, type `help`.")
   st.write("If you want to exit, type `exit`.")
   st.write("If you want to clear the chat, type `clear`.")
