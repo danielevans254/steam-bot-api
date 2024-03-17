@@ -6,14 +6,15 @@ load_dotenv()
 
 from commands.command_list import show_command_list
 from components.sidebar import select_model
-from chat_bot import chat_bot
+from chat_bot import model_chat, chat_history
 from web_pages.main_layout import page_setup
 
 def main():
   page_setup()
   show_command_list()
   select_model()
-  chat_bot()
+  model_chat()
+  chat_history()
 
 if __name__ == "__main__":
   main()
