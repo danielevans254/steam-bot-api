@@ -1,9 +1,10 @@
 import streamlit as st
 from styles.messages.styles import user_message_style, assistant_message_style
+from chat_history_list import chat_history_list
 # FIXME: The kingparser already works as expected yet the selected option from this doesn't change the model, you can change it manually inside the king_parser file, this might have some caching issues, but it's not clear why it's not changing
 
 def new_chat():
-  if st.button("New chat history"):
+  if st.button("New chat"):
     st.session_state["chat_history"] = []
     st.session_state["chat_history"].append({"role": "assistant", "content": "Welcome new chat!"})
     return st.session_state["chat_history"]
@@ -11,7 +12,7 @@ def new_chat():
 def model_select():
   add_selectbox = st.selectbox(
     "What model would you like to use?",
-    ("ChatGPT 3.5 Turbo", "Ollama 2 Chat", "Mistral", "Test")
+    ("ChatGPT 3.5 Turbo", "Ollama 2 Chat", "Mistral", "Test", "Nous Hermes 2")
   )
   return add_selectbox
 
@@ -36,10 +37,6 @@ exported_add_selectbox_value = parse_selected_model()
 def side_bar():
   with st.sidebar:
     st.subheader("Chatbot ☕️")
-    st.sidebar.subheader('Chat History')
-    model_select()
     new_chat()
-    st.radio(
-      "Choose a shipping method",
-      ("Standard (5-15 days)", "Express (2-5 days)")
-    )
+    model_select()
+    chat_history_list()
