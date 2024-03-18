@@ -1,22 +1,24 @@
 import streamlit as st
 import streamlit.components.v1 as components
-import os
-from dotenv import load_dotenv
-load_dotenv()
 
 from commands.command_list import show_command_list
-from components.sidebar import select_model
-from chat_bot import model_chat, chat_history
-from web_pages.main_layout import page_setup
+from components.sidebar import side_bar
+from chat_bot import model_chat, chat_history, clear_chat_history
+
+st.set_page_config(
+page_title="Chatbot: Steam Games & CheapShark API",
+page_icon="🎮",
+layout="wide",
+initial_sidebar_state="expanded"
+)
+st.write("Welcome to the chatbot! Ask me anything about Steam Games, CheapShark API, and I'll try to help you out.")
+st.write("For list of commands click `show commands`")
 
 def main():
-  page_setup()
+  side_bar()
   show_command_list()
-  select_model()
   model_chat()
+  clear_chat_history()
   chat_history()
 
-if __name__ == "__main__":
-  main()
-
-
+main()
