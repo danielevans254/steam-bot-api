@@ -8,6 +8,6 @@ llm = Ollama(
     model="llama2:chat", callback_manager=CallbackManager([StreamingStdOutCallbackHandler()])
 )
 
-def ollama_response(user_input):
+def llama2_chat_response(user_input):
     response = llm(user_input)
     return response
