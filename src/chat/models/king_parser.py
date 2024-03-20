@@ -3,7 +3,7 @@ from models.test_model import test_response
 from models.ollama_2_model import llama2_chat_response
 from models.mistral_model import mistral_response
 from models.nous_hermes2 import nous_hermes2_response
-from components.sidebar import exported_add_selectbox_value
+from components.sidebar import parse_selected_model
 
 # TODO: This should be taken from the sidebar component for the select box, but for now, we'll hardcode it.
 exported_add_selectbox_value = "llama2_chat"
