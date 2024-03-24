@@ -11,7 +11,7 @@ from commands.command_list_answers import command_list_answer, is_command_list_a
 from dotenv import load_dotenv
 load_dotenv()
 from datetime import datetime
-from util.db import create_new_chat_session, database_connection, create_table, insert_data_chat_content, fetch__all_chat_history_db
+from util.db import create_new_chat_session, database_connection, create_table, insert_data_chat_content, fetch__all_chat_history_db,fetch_last_chat_session_id
 
 def set_page_config():
   st.set_page_config(
@@ -47,7 +47,7 @@ def model_chat(selected_model):
   st.title("Chat with our Assistant")
 
   if "chat_id" not in st.session_state:
-      st.session_state["chat_id"] = create_new_chat_session()
+      st.session_state["chat_id"] = fetch_last_chat_session_id()
   chat_id = st.session_state["chat_id"]
 
   if "chat_history" not in st.session_state:
