@@ -66,12 +66,20 @@ def fetch_alerts_list():
     }
   ]
 
+def parse_deals_list(deals):
+  important_columns = ["title", "salePrice", "isOnSale", "steamRatingText", "steamRatingPercent", "steamRatingCount"]
+  parsed_deals = []
+  for deal in deals:
+    parsed_deal = {column: deal[column] for column in important_columns if column in deal}
+    parsed_deals.append(parsed_deal)
+  return parsed_deals
+
 def command_list_answer(user_input):
   if is_command_list_answer(user_input):
     answers = {
       "help": "If you need help, type `help`.",
       "clear": "If you want to clear the chat, type `clear`.",
-      "deals": fetch_deals_list(),
+      "deals": parse_deals_list(fetch_deals_list()),
       "games": fetch_games_list(),
       "stores": fetch_stores_list(),
       "alerts": fetch_alerts_list(),
@@ -85,7 +93,7 @@ def command_list_answer_with_argument(user_input):
     answers = {
       "help": "If you need help, type `help`.",
       "clear": "If you want to clear the chat, type `clear`.",
-      "deals": fetch_deals_list(),
+      "deals": parse_deals_list(fetch_deals_list()),
       "games": fetch_games_list(),
       "stores": fetch_stores_list(),
       "alerts": fetch_alerts_list(),
