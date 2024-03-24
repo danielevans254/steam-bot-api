@@ -85,6 +85,29 @@ def create_new_chat_session():
     if cnx.is_connected():
       cnx.close()
 
+def fetch_last_chat_session_id():
+  cnx = database_connection()
+  if cnx is None:
+    return
+
+  cursor = cnx.cursor()
+  try:
+    cursor.execute("SELECT id FROM chat_session ORDER BY id DESC LIMIT 1")
+    result = cursor.fetchone()
+    if result is None:
+      session_id = create_new_chat_session()
+      return session_id
+    else:
+      print(f"Last chat session ID: {result[0]}")
+      return result[0]
+  except mysql.connector.Error as err:
+    print(f'Error: {err}')
+    return
+  finally:
+    cursor.close()
+    if cnx.is_connected():
+      cnx.close()
+
 def insert_data_chat_session(chat_content_id):
     cnx = database_connection()
     if cnx is None:
