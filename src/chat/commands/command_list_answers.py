@@ -1,41 +1,28 @@
-def is_command_list_answer(user_input):
-  if user_input == "help":
-    return True
-  elif user_input == "clear":
-    return True
-  elif user_input == "deals":
-    return True
-  elif user_input == "games":
-    return True
-  elif user_input == "stores":
-    return True
-  elif user_input == "alerts":
-    return True
-  return False
+import requests
+import streamlit as st
+import unittest
 
+LIST_OF_DEALS_URL = 'https://www.cheapshark.com/api/1.0/deals'
+LIST_OF_GAMES_URL = 'https://www.cheapshark.com/api/1.0/games'
+LIST_OF_STORES_URL = 'https://www.cheapshark.com/api/1.0/stores'
+ALERT_URL= 'https://www.cheapshark.com/api/1.0/alerts'
+
+def is_command_list_answer(user_input):
+    command_list = ["help", "clear", "deals", "games", "stores", "alerts"]
+    return any(user_input.startswith(command) for command in command_list)
+
+def is_command_list_answer_with_argument(user_input):
+    command_list = ["help", "clear", "deals", "games", "stores", "alerts"]
+    return any(user_input.startswith(command + ":") for command in command_list)
+
+@st.cache_data
 def fetch_deals_list():
-  return [
-    {
-      "dealID": "12345",
-      "title": "Game Title",
-      "salePrice": "10.00",
-      "normalPrice": "20.00",
-      "savings": "50%",
-      "storeID": "1",
-      "gameID": "1",
-      "isOnSale": "1"
-    },
-    {
-      "dealID": "67890",
-      "title": "Another Game Title",
-      "salePrice": "15.00",
-      "normalPrice": "30.00",
-      "savings": "50%",
-      "storeID": "2",
-      "gameID": "2",
-      "isOnSale": "1"
-    }
-  ]
+    try:
+        response = requests.get(LIST_OF_DEALS_URL)
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException:
+        return None
 
 def fetch_games_list():
   return [
@@ -54,18 +41,14 @@ def fetch_games_list():
   ]
 
 def fetch_stores_list():
-  return [
-    {
-      "storeID": "1",
-      "storeName": "Steam",
-      "isActive": "1"
-    },
-    {
-      "storeID": "2",
-      "storeName": "Epic Games",
-      "isActive": "1"
-    }
-  ]
+  try:
+    response = requests.get(LIST_OF_STORES_URL)
+    response.raise_for_status()
+    stores = response.json()
+    return stores
+
+  except requests.RequestException as e:
+    return None
 
 def fetch_alerts_list():
   return [
@@ -85,6 +68,20 @@ def fetch_alerts_list():
 
 def command_list_answer(user_input):
   if is_command_list_answer(user_input):
+    answers = {
+      "help": "If you need help, type `help`.",
+      "clear": "If you want to clear the chat, type `clear`.",
+      "deals": fetch_deals_list(),
+      "games": fetch_games_list(),
+      "stores": fetch_stores_list(),
+      "alerts": fetch_alerts_list(),
+    }
+    return answers.get(user_input)
+  else:
+    return None
+
+def command_list_answer_with_argument(user_input):
+  if is_command_list_answer_with_argument(user_input):
     answers = {
       "help": "If you need help, type `help`.",
       "clear": "If you want to clear the chat, type `clear`.",
