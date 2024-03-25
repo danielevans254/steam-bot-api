@@ -1,6 +1,7 @@
 import streamlit as st
 import streamlit.components.v1 as components
 import os
+import json
 
 from streamlit_extras.tags import tagger_component
 from commands.command_list import show_command_list
@@ -63,55 +64,54 @@ def chosen_chat_history(selected_chat_id):
 #   # Use the list of inputs with the stream method
 #   return chain.stream(inputs)
 
-def model_chat(selected_model):
-  st.title("Chat with our Assistant")
+def model_chat(selected_model,chat_session_id):
+    st.title("Chat with our Assistant")
 
-  if "chat_id" not in st.session_state:
-      st.session_state["chat_id"] = fetch_last_chat_session_id()
-  chat_id = st.session_state["chat_id"]
+    if "chat_id" not in st.session_state:
+        st.session_state["chat_id"] = fetch_last_chat_session_id()
 
-  if "chat_history" not in st.session_state:
-    st.session_state["chat_history"] = []
-
-  if not st.session_state["chat_history"]:
-    st.session_state["chat_history"].append({"role": "assistant", "content": random_welcome_message()})
-# FIXME The commands now stopped working...
-  if user_input := st.chat_input("Type a message.."):
     if "chat_history" not in st.session_state:
-      st.session_state["chat_history"] = []
-    st.session_state["chat_history"].append({"role": "user", "content": user_input})
-    if is_command_list_answer_with_argument(user_input):
-      command, argument = user_input.split(":")
-      command = command.strip()
-      argument = argument.strip()
-      command_actions = {
-        "deals": lambda arg: print(f"Processing 'deals' command with argument: {arg}"),
-        "games": lambda arg: print(f"Processing 'games' command with argument: {arg}"),
-        "stores": lambda arg: print(f"Processing 'stores' command with argument: {arg}"),
-        "alerts": lambda arg: print(f"Processing 'alerts' command with argument: {arg}")
-      }
-      if command in command_actions:
-        command_actions[command](argument)
-        st.session_state["chat_history"].append({"role": "assistant", "content": f"Processing '{command}' command with argument: {argument}"})
-    elif is_command_list_answer(user_input):
-      st.session_state["chat_history"].append({"role": "assistant", "content": command_list_answer(user_input)})
-    elif selected_model == "llava":
-      response = llava_response(user_input)
-      created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-      # FIXME the chat_id is not being passed to the insert_data_chat_content function, the radio button is not properly selecting the button and if i try to the pass the function here it always fucking throws the duplicatedwidget even though i assign proper key to it
-      insert_data_chat_content(user_input, response, selected_model, created_at, chat_id)
-      st.session_state["chat_history"].append({"role": "assistant", "content": response})
-    else:
-      with st.spinner("Processing request..."):
-        response = king_parser(user_input, selected_model)
-        if response is not None:
-          created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-          # FIXME the chat_id is not being passed to the insert_data_chat_content function, the radio button is not properly selecting the button and if i try to the pass the function here it always fucking throws the duplicatedwidget even though i assign proper key to it
-          insert_data_chat_content(user_input, response, selected_model, created_at, chat_id)
-          st.session_state["chat_history"].append({"role": "assistant", "content": response})
+        st.session_state["chat_history"] = []
+
+    if not st.session_state["chat_history"]:
+        st.session_state["chat_history"].append({"role": "assistant", "content": random_welcome_message()})
+
+    user_input = st.chat_input("Type a message..")
+    if user_input:
+        st.session_state["chat_history"].append({"role": "user", "content": user_input})
+# NOTE: The commands are outputting something but the response is not being displayed in the chat session state..
+        if is_command_list_answer_with_argument(user_input):
+            command, argument = user_input.split(":")
+            command = command.strip()
+            argument = argument.strip()
+            command_actions = {
+              "deals": lambda arg: f"Processing 'deals' command with argument: {arg}",
+              "games": lambda arg: f"Processing 'games' command with argument: {arg}",
+              "stores": lambda arg: f"Processing 'stores' command with argument: {arg}",
+              "alerts": lambda arg: f"Processing 'alerts' command with argument: {arg}"
+            }
+            if command in command_actions:
+              response = command_actions[command](argument)
+              response_str = str(response)  # Convert response to string
+              print(response_str, "  response[][]")
+              st.session_state["chat_history"].append({"role": "assistant", "content": response_str})
+        elif is_command_list_answer(user_input):
+            response = command_list_answer(user_input)
+            response_str = json.dumps(response)
+            print(response_str, "  response[][][][]")
+            st.session_state["chat_history"].append({"role": "assistant", "content": response_str})
         else:
-          st.warning("The response is not yet available. Please wait...")
-    user_input = ""
+            with st.spinner("Processing request..."):
+                if selected_model == "llava":
+                    response = llava_response(user_input)
+                else:
+                    response = king_parser(user_input, selected_model)
+                if response is not None:
+                    created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    insert_data_chat_content(user_input, response, selected_model, created_at, chat_session_id)
+                    st.session_state["chat_history"].append({"role": "assistant", "content": response})
+                else:
+                    st.warning("The response is not yet available. Please wait...")
 
 def model_description(model_selected):
     model_description = {
@@ -176,6 +176,7 @@ def main():
                 image_dir = "uploaded_images"
                 os.makedirs(image_dir, exist_ok=True)
                 image_path = os.path.join(image_dir, uploaded_file.name)
+                print(image_path)
                 with open(image_path, "wb") as f:
                     f.write(uploaded_file.getbuffer())
                 print(image_path)
@@ -187,7 +188,7 @@ def main():
         selected_chat_id = chat_history_list()
 
     show_command_list()
-    model_chat(selected_model)
+    model_chat(selected_model,selected_chat_id)
     display_chat_history(selected_chat_id)
 
 if __name__ == "__main__":
