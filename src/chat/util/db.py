@@ -43,6 +43,7 @@ def create_table():
         )
     """)
     print('Table chat_session created.')
+
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS chat_content (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -55,14 +56,15 @@ def create_table():
         )
     """)
     print('Table chat_content created.')
-    cursor.close()
-    cnx.close()
-    print('Database connection closed[TABLE CREATED].')
 
   except mysql.connector.Error as err:
     print(f'Error: {err}')
+
+  finally:
     if cnx.is_connected():
+      cursor.close()
       cnx.close()
+      print('Database connection closed[TABLE CREATED].')
 
 def create_new_chat_session():
   cnx = database_connection()
@@ -144,30 +146,35 @@ def check_session_id_exists(chat_session_id):
 
 def insert_data_chat_content(user_chat, ai_response, model, created_at, chat_session_id):
   # NOTE: This is fine, however instead of creating a new chat session every time i check for an existing chat session and add the data to that chat session
-    if not check_session_id_exists(chat_session_id):
-        chat_session_id = create_new_chat_session()
-        if chat_session_id is None:
-            print("Failed to create a new chat session.")
-            return
+  if not check_session_id_exists(chat_session_id):
+    chat_session_id = create_new_chat_session()
+    if chat_session_id is None:
+      print("Failed to create a new chat session.")
+      return
+  else:
+    chat_session_id = fetch_chat_session(chat_session_id)
+    if chat_session_id is None:
+      print("Failed to fetch the current chat session.")
+      return
 
-    cnx = database_connection()
-    if cnx is None:
-        return
+  cnx = database_connection()
+  if cnx is None:
+    return
 
-    cursor = cnx.cursor()
-    try:
-        cursor.execute("INSERT INTO chat_content (user_chat, ai_response, model, created_at, chat_session_id) VALUES (%s, %s, %s, %s, %s)", (user_chat, ai_response, model, created_at, chat_session_id))
-        cnx.commit()
-        print(f"Inserted data: user_chat={user_chat}, ai_response={ai_response}, model={model}, created_at={created_at}, chat_session_id={chat_session_id}")
-    except mysql.connector.Error as err:
-        print(f'Error: {err}')
-    finally:
-        cursor.close()
-        if cnx.is_connected():
-            cnx.close()
+  cursor = cnx.cursor()
+  try:
+    cursor.execute("INSERT INTO chat_content (user_chat, ai_response, model, created_at, chat_session_id) VALUES (%s, %s, %s, %s, %s)", (user_chat, ai_response, model, created_at, chat_session_id,))
+    cnx.commit()
+    print(f"Inserted data: user_chat={user_chat}, ai_response={ai_response}, model={model}, created_at={created_at}, chat_session_id={chat_session_id}")
+  except mysql.connector.Error as err:
+    print(f'Error: {err}')
+  finally:
+    cursor.close()
+    if cnx.is_connected():
+      cnx.close()
 
 
-def fetch__all_chat_history_db():
+def fetch_all_chat_history_db():
   cnx = database_connection()
   if cnx is None:
     return []
@@ -187,3 +194,54 @@ def fetch__all_chat_history_db():
     if cnx.is_connected():
       cnx.close()
     return []
+
+def fetch_selected_id_chat_history_db(chat_session_id):
+  cnx = database_connection()
+  if cnx is None:
+    print("Database connection failed.")
+    return [], None
+
+  try:
+    cursor = cnx.cursor()
+    query = "SELECT * FROM chat_content WHERE chat_session_id = %s"
+    cursor.execute(query, (chat_session_id,))
+    rows = cursor.fetchall()
+    print(f"Chat Session ID: {chat_session_id}")
+    print(f"Total number of rows in chat_history is: {cursor.rowcount}")
+    chat_session = fetch_chat_session(chat_session_id)
+  except mysql.connector.Error as err:
+    print(f'Error: {err}')
+    rows = []
+    chat_session = None
+  finally:
+    cursor.close()
+    cnx.close()
+    print('Database connection closed.')
+
+  separated_rows = [list(row) for row in rows]
+  return separated_rows, chat_session
+
+def fetch_chat_session(chat_session_id):
+    cnx = database_connection()
+    if cnx is None:
+        print("Database connection failed.")
+        return None
+
+    try:
+        cursor = cnx.cursor()
+        query = "SELECT * FROM chat_session WHERE id = %s"
+        cursor.execute(query, (chat_session_id,))
+        result = cursor.fetchone()
+        if result is None:
+            print(f"Chat session with ID {chat_session_id} does not exist.")
+            return None
+        else:
+            print(f"Fetched chat session with ID: {result[0]}")
+            return result[0]
+    except mysql.connector.Error as err:
+        print(f'Error: {err}')
+        return None
+    finally:
+        cursor.close()
+        if cnx.is_connected():
+            cnx.close()
