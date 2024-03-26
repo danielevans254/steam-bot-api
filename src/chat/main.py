@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from streamlit_extras.tags import tagger_component
 from commands.command_list import show_command_list
 from styles.messages.styles import user_message_style, assistant_message_style
-from utils.default_messages import random_welcome_message
+from util.default_messages import random_welcome_message
 from models.king_parser import king_parser
 from models.llava_model import llava_response
 from commands.command_list_answers import command_list_answer, is_command_list_answer, is_command_list_answer_with_argument
@@ -31,6 +31,10 @@ def show_welcome_message():
 
 def chat_history_list():
   chats = fetch_all_chat_history_db() or []
+  if chats == []:
+    st.warning("No chat history found.")
+    create_new_chat_session()
+    return
   chat_ids = [chat[0] for chat in chats][::-1]
   chat_labels = [chat[1] for chat in chats][::-1]
   selected_chat_label = st.sidebar.radio("Chat history", options=chat_labels, index=0)
