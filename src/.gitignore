@@ -1,2 +1,5 @@
 .env
 **/*.cpython-311.pyc
+*.pyc
+*.exe
+*.dll
