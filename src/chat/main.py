@@ -12,7 +12,7 @@ from util.default_messages import random_welcome_message
 from models.king_parser import king_parser
 from models.llava_model import llava_response
 from commands.command_list_answers import command_list_answer, is_command_list_answer, is_command_list_answer_with_argument
-from util.db import create_new_chat_session, database_connection, create_table, insert_data_chat_content, fetch_all_chat_history_db, fetch_last_chat_session_id, fetch_selected_id_chat_history_db
+from util.db import create_new_chat_session, database_connection, insert_data_chat_content, fetch_all_chat_history_db, fetch_last_chat_session_id, fetch_selected_id_chat_history_db, create_schema
 from langchain_core.output_parsers import StrOutputParser
 
 load_dotenv()
@@ -32,7 +32,6 @@ def show_welcome_message():
 def chat_history_list():
   chats = fetch_all_chat_history_db() or []
   if chats == []:
-    st.warning("No chat history found.")
     create_new_chat_session()
     return
   chat_ids = [chat[0] for chat in chats][::-1]
@@ -151,7 +150,7 @@ def display_chat_history(selected_chat_id):
 def main():
   set_page_config()
   database_connection()
-  create_table()
+  create_schema()
 
   with st.sidebar:
     st.subheader("Chatbot 💻")
