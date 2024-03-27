@@ -5,35 +5,19 @@ from dotenv import load_dotenv
 from datetime import datetime
 load_dotenv()
 
-def database_connection():
-  try:
-    cnx = mysql.connector.connect(
-      host=os.getenv("MYSQL_HOST"),
-      port=os.getenv("MYSQL_PORT"),
-      user=os.getenv("MYSQL_USER"),
-      password=os.getenv("MYSQL_PASSWORD"),
-      database=os.getenv("MYSQL_DATABASE")
-    )
-
-    if cnx.is_connected():
-      print('Connected to MySQL database')
-    else:
-      print('Connection failed')
-
-    return cnx
-
-  except mysql.connector.Error as err:
-    print(f'Error: {err}')
-    return None
-# NOTE: The created_at for the chat_content is when the given chat was sent
-# NOTE: The created_at for the chat_session is when the chat session was created
-def create_table():
-  cnx = database_connection()
+def create_schema():
+  cnx = database_connection(without_db=True)
   if cnx is None:
     return
 
   try:
     cursor = cnx.cursor()
+    cursor.execute("CREATE SCHEMA IF NOT EXISTS chat_bot")
+    print('Schema chat_bot created.')
+
+    cnx.database = 'chat_bot'
+    print('Using chat_bot database.')
+
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS chat_session (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -62,7 +46,36 @@ def create_table():
     if cnx.is_connected():
       cursor.close()
       cnx.close()
-      print('Database connection closed[TABLE CREATED].')
+      print('Database connection closed[SCHEMA CREATED].')
+
+def database_connection(without_db=False):
+  try:
+    connection_config = {
+      'host': os.getenv("MYSQL_HOST"),
+      'port': os.getenv("MYSQL_PORT"),
+      'user': os.getenv("MYSQL_USER"),
+      'password': os.getenv("MYSQL_PASSWORD")
+    }
+
+    # Only add the database to the configuration if without_db is False
+    if not without_db:
+      connection_config['database'] = os.getenv("MYSQL_DATABASE")
+
+    cnx = mysql.connector.connect(**connection_config)
+
+    if cnx.is_connected():
+      print('Connected to MySQL database')
+    else:
+      print('Connection failed')
+
+    return cnx
+
+  except mysql.connector.Error as err:
+    print(f'Error: {err}')
+    return None
+
+# NOTE: The created_at for the chat_content is when the given chat was sent
+# NOTE: The created_at for the chat_session is when the chat session was created
 
 def create_new_chat_session():
   cnx = database_connection()
